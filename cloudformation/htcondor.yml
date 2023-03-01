@@ -204,9 +204,9 @@ Parameters:
       - m5n.16xlarge
       - m5n.24xlarge
   pWorkerNodeAmiId:
-    Description: The AMI to run the HTCondor Worker nodes on. Default is the chs-centos-7-awstools AMI.
+    Description: The AMI to run the HTCondor Worker nodes on. Needs to have minimum required software installed.
     Type: AWS::EC2::Image::Id
-    Default: ami-0901c9e889f743955
+    Default: ami-01234
 
   pControlNodeVolumeSize:
     Description: "The EBS volume size of the Control Node. NOTE: AWS Elastic File System storage is comes configured on the Control Node."
@@ -315,9 +315,9 @@ Parameters:
       - m5n.16xlarge
       - m5n.24xlarge
   pControlNodeAmiId:
-    Description: The AMI to run the HTCondor Controller node on. Default is the chs-centos-7-awstools AMI.
+    Description: The AMI to run the HTCondor Controller node on. Needs to have minimum required software installed.
     Type: AWS::EC2::Image::Id
-    Default: ami-0901c9e889f743955
+    Default: ami-01234
 
   pUseSpotInstances:
     Description: Whether to use Spot Instance for the worker nodes
