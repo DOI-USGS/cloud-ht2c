@@ -2,9 +2,9 @@
   {
     "name": "cloud-htc",
     "organization": "U.S. Geological Survey",
-    "description": "Amazon Web Services Service Product ",
-    "version": "main",
-    "status": "Archival",
+    "description": "Amazon Web Services Service Product",
+    "version": "0.1",
+    "status": "Alpha",
 
     "permissions": {
       "usageType": "openSource",
