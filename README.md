@@ -14,7 +14,7 @@ project and [Cloud Hosting Solutions](https://www.usgs.gov/associate-chief-i
 Not sure if we need this section...
 
 - AWS Account
-- AWS VPC with at least two subnets
+- AWS VPC with at least three subnets
 - AWS AMIs for HTCondor Control and Worker Nodes
 - Data to process
 
