@@ -1,6 +1,6 @@
 # Update an existing HTCondor Cluster
 
-You can updated the HTCondor Cluster through an AWS Service Catalog Product, following the proceeding steps.
+You can updated the HTCondor Cluster through an AWS Service Catalog Products.
 
 ## 1. Update an existing HTCondor Cluster
 
@@ -10,4 +10,3 @@ You can updated the HTCondor Cluster through an AWS Service Catalog Product, fol
 1. You can review the full options of parameters under [parameter-descriptions.md](./parameter-descriptions.md)
 1. Once completed, select `Submit`
 1. Once the stack has reached the `UPDATE_COMPLETE` status, your cluster has been updated
-
