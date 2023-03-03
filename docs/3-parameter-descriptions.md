@@ -1,7 +1,6 @@
 # Parameter Descriptions
 
-The HTCondor Service Catalog Product supports a variety of parameters, which enables customization
-and optimization of the cluster.
+The HTCondor Service Catalog Product supports a variety of parameters, which enable customization and optimization of the cluster.
 
 ## Parameters
 
@@ -9,7 +8,7 @@ and optimization of the cluster.
 
 #### Name Prefix
 
-Enter a String that will be prefixed on the deployed resources (EC2 Instance and Volume, the EFS FileSystem). Enter something unique to easily identify which resources are related to your HTCondor Cluster.
+Enter a `string` that will be prefixed on the deployed resources (EC2 Instance and Volume, the EFS FileSystem). Enter something unique to easily identify which resources are related to your HTCondor Cluster.
 
 #### VPC
 
@@ -35,7 +34,7 @@ The root EBS Volume size to attach to the controller node. The controller node u
 
 #### Control Node AMI ID
 
-The AMI to launch the Control Node with. CentOS 7 is required for network settings. The AMI must have awscli, the cloudwatch logging agent, and cfn-signal installed to correctly provision.
+The AMI to launch the Control Node with. CentOS 7 is required for network settings. The AMI must have awscli, the cloudwatch logging agent, and cfn-signal installed to correctly provision. See [create base image](./create_base_image.md) for more information.
 
 ### Worker Configuration
 

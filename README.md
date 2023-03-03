@@ -1,7 +1,7 @@
 # Cloud HT2C
 
-[AWS CLoudformation](https://aws.amazon.com/cloudformation/) configuration for
-high-throughput computing with [HTCondor](http://htcondor.org), support by the
+[AWS Cloudformation](https://aws.amazon.com/cloudformation/) configuration for
+high-throughput computing with [HTCondor](http://htcondor.org), supported by
 USGS [HyTEST](https://www.usgs.gov/mission-areas/water-resources/science/integrated-water-prediction-iwp)
 project and [Cloud Hosting Solutions](https://www.usgs.gov/associate-chief-information-officer/cloud-hosting-solutions)
 

@@ -1,6 +1,6 @@
 # HTCondor Amazon Machine Images (AMIs)
 
-HTCondor nodes can be launched with pre-staged software in the form of [Amazon Machine Images (AMIs)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html). This i s useful if you don't want to wait for a large software library to be downloaded and installed each time you spin up a fresh cluster. It is recommended to generate AMIs for your HTCondor nodes with the software you need, such as HTCondor, Docker, and Python3, etc. General information on creating an AMI with an EC2 instance can be found in [Create your own AMI](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html#creating-an-ami), but the general steps are as follows:
+HTCondor nodes can be launched with pre-staged software in the form of [Amazon Machine Images (AMIs)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html). This is useful if you don't want to wait for a large software library to be downloaded and installed each time you spin up a fresh cluster. It is recommended to generate AMIs for your HTCondor nodes with the software you need, such as HTCondor, Docker, and Python3, etc. General information on creating an AMI with an EC2 instance can be found in [Create your own AMI](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html#creating-an-ami), but the general steps are as follows:
 
 ## 1. Launch and Prepare an EC2 Instance
 
@@ -13,10 +13,10 @@ HTCondor nodes can be launched with pre-staged software in the form of [Amazon M
 
 ## 2. Create an AMI
 
-Once you've installed and configured the desired software on your EC2 instance, you can create a new AMI from it. Future EC2 instances can be launced from that AMI, and will have that software already configured. To create the new AMI:
+Once you've installed and configured the desired software on your EC2 instance, you can create a new AMI from it. Future EC2 instances can be launched from that AMI, and will have that software already configured. To create the new AMI:
 
 1. Navigate to the EC2 Service
-2. Select `Instances`. Select the EC2 instance you previously configured
+2. Select `Instances` and select the EC2 instance you previously configured
 3. Select `Actions` -> `Image and templates` -> `Create image`
 4. Enter the image name, description, and any tags. Select `Create Image`
 5. Select `AMIs`. Locate the image you just created based on its name and description
