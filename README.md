@@ -5,10 +5,6 @@ high-throughput computing with [HTCondor](http://htcondor.org), supported b
 USGS [HyTEST](https://www.usgs.gov/mission-areas/water-resources/science/integrated-water-prediction-iwp)
 project and [Cloud Hosting Solutions](https://www.usgs.gov/associate-chief-information-officer/cloud-hosting-solutions)
 
-## Table of Contents
-
-[[_TOC_]]
-
 ## Requirements
 
 - AWS Account
