@@ -20,7 +20,7 @@ Not sure if we need this section...
 
 ## Overview
 
-The [hycondor.yml](./cloudformation/htcondor.yml) template file in this
+The [htcondor.yml](./cloudformation/htcondor.yml) template file in this
 repository creates a CloudFormation stack with all necessary AWS resources for
 a Linux-based HTCondor cluster on-demand. This version is an Alpha release
 (v. 0.1) with new capabilities and further documentation to come.
