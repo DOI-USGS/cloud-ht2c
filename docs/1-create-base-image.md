@@ -1,6 +1,21 @@
 # HTCondor Amazon Machine Images (AMIs)
 
-HTCondor nodes can be launched with pre-staged software in the form of [Amazon Machine Images (AMIs)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html). This is useful if you don't want to wait for a large software library to be downloaded and installed each time you spin up a fresh cluster. It is recommended to generate AMIs for your HTCondor nodes with the software you need, such as HTCondor, Docker, and Python3, etc. General information on creating an AMI with an EC2 instance can be found in [Create your own AMI](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html#creating-an-ami), but the general steps are as follows:
+HTCondor nodes can be launched with pre-staged software in the form of [Amazon Machine Images (AMIs)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html). This is useful if you don't want to wait for a large software library to be downloaded and installed each time you spin up a fresh cluster. The [htcondor.yml](../cloudformation/htcondor.yml) stack accepts AMI IDs in the `ControlNodeAmiId` and `WorkerNodeAmiId` parameters, and it installs the minimum necessary dependencies needed by the HTCondor cluster on every instance:
+
+- [cfn-bootstrap](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-helper-scripts-reference.html#cfn-helper-scripts-reference-downloads)
+- [awscliv2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- [ssm-agent](https://docs.aws.amazon.com/systems-manager/latest/userguide/ssm-agent.html)
+- [HTCondor](https://htcondor.readthedocs.io/en/latest/getting-htcondor/admin-quick-start.html) (latest version using **get_htcondor**)
+
+The HTCondor cluster instances must run CentOS 7 at this time due to networking purposes. The official CentOS AMIs for use in the US regions are:
+
+- `ami-08c191625cfb7ee61` will work in the `us-west-2` region **only** (default)
+- `ami-0dee0f906cf114191` will work in the `us-west-1` region **only**
+- `ami-05a36e1502605b4aa` will work in the `us-east-2` region **only**
+- `ami-002070d43b0a4f171` will work in the `us-east-1` region **only**
+
+You may [Find a Linux AMI](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html)
+on AWS, or you may create one yourself if you'd like to include other dependencies (e.g., Docker) prior to launching the cluster (but note that `cfn-bootstrap`, `awscliv2`, and `HTCondor` are installed on all instances at boot time). General information on creating an AMI with an EC2 instance can be found in [Create your own AMI](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html#creating-an-ami), but the general steps are as follows:
 
 ## 1. Launch and Prepare an EC2 Instance
 

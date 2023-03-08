@@ -8,8 +8,10 @@ project and [Cloud Hosting Solutions](https://www.usgs.gov/associate-chief-i
 ## Requirements
 
 - AWS Account
+- AWS account access with privileges to create required resources in
+[htcondor.yml](./cloudformation/htcondor.yml)
 - AWS VPC with at least three subnets
-- AWS AMIs for HTCondor Control and Worker Nodes
+- AWS Amazon Machine Image (AMI) using CentOS 7 for Control and Worker Nodes
 - Data to process
 
 ## Overview
@@ -35,9 +37,13 @@ a Linux-based HTCondor cluster on-demand. This version is an Alpha releas
 - [Contributing](./CONTRIBUTING.md)
 
 ## Information for PEST users
-A common application for this software will be distributed model analysis using [PEST](http://pesthomepage.org) and [PEST++](https://github.com/usgs/pestpp/). For information on integrating PEST/PEST++ with HTCondor, see [Fienen and Hunt, 2015](https://ngwa.onlinelibrary.wiley.com/doi/10.1111/gwat.12320).
+A common application for this software will be distributed model analysis using
+[PEST](http://pesthomepage.org) and [PEST++](https://github.com/usgs/pestpp/).
+For information on integrating PEST/PEST++ with HTCondor, see
+[Fienen and Hunt, 2015](https://ngwa.onlinelibrary.wiley.com/doi/10.1111/gwat.12320).
 
-The port range of 9700-9710 is available for PEST/PEST++ communications between the Control Node and Worker Nodes.
+The port range of 9700-9710 is available for PEST/PEST++ communications between
+the Control Node and Worker Nodes.
 
 ## Contact Information
 
