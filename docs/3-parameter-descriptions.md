@@ -34,7 +34,12 @@ The root EBS Volume size to attach to the controller node. The controller node u
 
 #### Control Node AMI ID
 
-The AMI to launch the Control Node with. CentOS 7 is required for network settings. The AMI must have awscli, the cloudwatch logging agent, and cfn-signal installed to correctly provision. See [create base image](./create_base_image.md) for more information.
+The AMI to launch the Control Node with. CentOS 7 is required for network settings. The CloudFormation template will install cfn-bootstrap, awscliv2, and HTCondor (latest) at boot on top of this AMI. The following region-dependent AMIs are good for getting started:
+
+- `ami-08c191625cfb7ee61` will work in the `us-west-2` region **only** (default)
+- `ami-0dee0f906cf114191` will work in the `us-west-1` region **only**
+- `ami-05a36e1502605b4aa` will work in the `us-east-2` region **only**
+- `ami-002070d43b0a4f171` will work in the `us-east-1` region **only**
 
 ### Worker Configuration
 
@@ -52,7 +57,12 @@ The root EBS Volume size to attach to the worker nodes.
 
 #### Worker Node AMI ID
 
-The AMI to launch the worker node with. CentOS 7 is required for network settings. The AMI must have awscli, the cloudwatch logging agent, and cfn-signal installed to correctly provision.
+The AMI to launch the worker node with. CentOS 7 is required for network settings. The CloudFormation template will install cfn-bootstrap, awscliv2, and HTCondor (latest) at boot on top of this AMI. The following region-dependent AMIs are good for getting started:
+
+- `ami-08c191625cfb7ee61` will work in the `us-west-2` region **only** (default)
+- `ami-0dee0f906cf114191` will work in the `us-west-1` region **only**
+- `ami-05a36e1502605b4aa` will work in the `us-east-2` region **only**
+- `ami-002070d43b0a4f171` will work in the `us-east-1` region **only**
 
 ### Advanced Configuration
 
