@@ -206,7 +206,7 @@ Parameters:
   pWorkerNodeAmiId:
     Description: The AMI to run the HTCondor Worker nodes on. Needs to have minimum required software installed.
     Type: AWS::EC2::Image::Id
-    Default: ami-01234
+    Default: ami-08c191625cfb7ee61
 
   pControlNodeVolumeSize:
     Description: "The EBS volume size of the Control Node. NOTE: AWS Elastic File System storage is comes configured on the Control Node."
@@ -317,7 +317,7 @@ Parameters:
   pControlNodeAmiId:
     Description: The AMI to run the HTCondor Controller node on. Needs to have minimum required software installed.
     Type: AWS::EC2::Image::Id
-    Default: ami-01234
+    Default: ami-08c191625cfb7ee61
 
   pUseSpotInstances:
     Description: Whether to use Spot Instance for the worker nodes
@@ -964,7 +964,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT30M
-        Count: !If [ cLaunchWorkerNode, "1", "0" ]
+        Count: 0
     UpdatePolicy:
       AutoScalingReplacingUpdate:
         WillReplace: true
@@ -996,7 +996,40 @@ Resources:
           - !Ref SelfReferencingSecurityGroup
         UserData:
           Fn::Base64: !Sub |
-            #!/bin/bash -xe
+            #!/bin/bash -x
+
+            yum install -y epel-release
+            yum update -y
+            yum install -y git curl jq unzip wget openssl-devel bzip2-devel libffi-devel xz-devel gcc emacs
+            yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+            systemctl enable amazon-ssm-agent
+
+            echo 'Installing awscliv2...'
+            curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip
+            unzip awscliv2.zip
+            ./aws/install -i /usr/local/aws
+            ln -s /usr/local/bin/aws /bin/aws
+
+            echo 'Installing cfn-bootstrap...'
+            yum install -y python-daemon
+            curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz -o aws-cfn-bootstrap-latest.tar.gz
+            mkdir aws-cfn-bootstrap-latest
+            tar xvf aws-cfn-bootstrap-latest.tar.gz -C aws-cfn-bootstrap-latest --strip=1
+            cd aws-cfn-bootstrap-latest
+            python setup.py build
+            python setup.py install
+            cd /root/
+            ln -s /usr/init/redhat/cfn-hup /etc/init.d/cfn-hup
+            chmod 755 /usr/init/redhat/cfn-hup
+            mkdir -p /opt/aws/bin
+            ln -s /usr/bin/cfn-hup /opt/aws/bin/cfn-hup
+
+            echo 'Status of cfn-hup service:'
+            systemctl status cfn-hup
+
+            echo 'Cleanup...'
+            rm -rf aws-cfn-bootstrap-latest.tar.gz awscliv2.zip aws/
+
             REGION="${AWS::Region}"
             /usr/local/bin/aws configure set default.region ${AWS::Region}
             STACK_NAME=${AWS::StackName}
@@ -1021,7 +1054,8 @@ Resources:
           ascending:
             - 01-config
             - 02-mount-efs
-            - 03-configure-condor
+            - 03-install-condor
+            - 04-configure-condor
         01-config:
           files:
             /etc/ansible/ansible.cfg:
@@ -1076,7 +1110,15 @@ Resources:
                 - efs_id: !If [ cCreateFileSystem, !Ref FileSystem, !Ref pEfsId ]
             02-set-mountdir-permissions:
               command: sudo chmod go+rw /mnt/condor_working
-        03-configure-condor:
+        03-install-condor:
+          packages:
+            yum:
+              iptables-services: []
+              wine: []
+          commands:
+            01-install-condor:
+              command: curl -fsSL https://get.htcondor.org | GET_HTCONDOR_PASSWORD="HTCondor10#" /bin/bash -s -- --no-dry-run
+        04-configure-condor:
           files:
             /etc/condor/config.d/config:
               content: !Sub |
@@ -1134,13 +1176,46 @@ Resources:
           Value: !Sub "${pNamePrefix} HTCondor Control Node"
       UserData:
         Fn::Base64: !Sub |
-          #!/bin/bash -xe
+          #!/bin/bash -x
+
+          yum install -y epel-release
+          yum update -y
+          yum install -y git curl jq unzip wget openssl-devel bzip2-devel libffi-devel xz-devel gcc emacs
+          yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+          systemctl enable amazon-ssm-agent
+
+          echo 'Installing awscliv2...'
+          curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip
+          unzip awscliv2.zip
+          ./aws/install -i /usr/local/aws
+          ln -s /usr/local/bin/aws /bin/aws
+
+          echo 'Installing cfn-bootstrap...'
+          yum install -y python-daemon
+          curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz -o aws-cfn-bootstrap-latest.tar.gz
+          mkdir aws-cfn-bootstrap-latest
+          tar xvf aws-cfn-bootstrap-latest.tar.gz -C aws-cfn-bootstrap-latest --strip=1
+          cd aws-cfn-bootstrap-latest
+          python setup.py build
+          python setup.py install
+          cd /root/
+          ln -s /usr/init/redhat/cfn-hup /etc/init.d/cfn-hup
+          chmod 755 /usr/init/redhat/cfn-hup
+          mkdir -p /opt/aws/bin
+          ln -s /usr/bin/cfn-hup /opt/aws/bin/cfn-hup
+
+          echo 'Status of cfn-hup service:'
+          systemctl status cfn-hup
+
+          echo 'Cleanup...'
+          rm -rf aws-cfn-bootstrap-latest.tar.gz awscliv2.zip aws/
+
           REGION="${AWS::Region}"
           /usr/local/bin/aws configure set default.region ${AWS::Region}
           STACK_NAME=${AWS::StackName}
 
           function error_exit {
-            /usr/bin/cfn-signal --exit-code 1 --reason '$1' --stack $STACK_NAME --resource ControlNodeInstance
+            /usr/bin/cfn-signal --exit-code 1 --reason '$1' --stack $STACK_NAME --resource WorkerNodeAutoscalingGroup
             exit 1
           }
 
@@ -1153,16 +1228,15 @@ Resources:
           /usr/bin/cfn-init -v --region $REGION --stack $STACK_NAME --resource ControlNodeInstance --configsets ascending || error_exit 'Failed to run cfn-init.'
           /usr/bin/cfn-hup || error_exit 'Failed to start cfn-hup'
           /usr/bin/cfn-signal --region $REGION --success true --stack $STACK_NAME --resource ControlNodeInstance
-    CreationPolicy:
-      ResourceSignal:
-        Timeout: PT10M
     Metadata:
       AWS::CloudFormation::Init:
         configSets:
           ascending:
             - 01-config
             - 02-mount-efs
-            - 03-configure-condor
+            - 03-install-condor
+            - 04-configure-condor
+
         01-config:
           files:
             /etc/ansible/ansible.cfg:
@@ -1222,7 +1296,15 @@ Resources:
               command: !Sub
                 - "sudo echo '${efs_id}.efs.${AWS::Region}.amazonaws.com:/ /mnt/condor_working nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport,_netdev 0 0' >> /etc/fstab"
                 - efs_id: !If [ cCreateFileSystem, !Ref FileSystem, !Ref pEfsId ]
-        03-configure-condor:
+        03-install-condor:
+          packages:
+            yum:
+              iptables-services: []
+              wine: []
+          commands:
+            00-install-condor:
+              command: curl -fsSL https://get.htcondor.org | GET_HTCONDOR_PASSWORD="HTCondor10#" /bin/bash -s -- --no-dry-run
+        04-configure-condor:
           files:
             /etc/condor/config.d/config:
               content: |
@@ -1241,7 +1323,7 @@ Resources:
             00-update-condor-file:
               command: export MY_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4) && /bin/sed -i "s/replaceme/$MY_IP/g" /etc/condor/config.d/config
             01-set-condor-password:
-              command: echo -n "$HTCondor9#" | sh -c "condor_store_cred add -c -i -"
+              command: echo -n "HTCondor9#" | sh -c "condor_store_cred add -c -i -"
             02-issue-condor-token:
               command: export MY_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4) && sh -c "umask 0077; condor_token_create -identity condor@${MY_IP} > /etc/condor/tokens.d/condor@${MY_IP}"
             03-configure-iptables:
