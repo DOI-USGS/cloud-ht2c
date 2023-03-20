@@ -1141,7 +1141,7 @@ Resources:
               group: root
           commands:
             00-set-condor-password:
-              command: echo -n "$HTCondor9#" | sh -c "condor_store_cred add -c -i -"
+              command: echo -n "HTCondor10#" | sh -c "condor_store_cred add -c -i -"
             01-issue-condor-token:
               command: !Sub "sh -c 'umask 0077; condor_token_create -identity condor@${ControlNodeInstance.PrivateIp} > /etc/condor/tokens.d/condor@${ControlNodeInstance.PrivateIp}'"
             02-configure-iptables-condor-port:
@@ -1323,7 +1323,7 @@ Resources:
             00-update-condor-file:
               command: export MY_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4) && /bin/sed -i "s/replaceme/$MY_IP/g" /etc/condor/config.d/config
             01-set-condor-password:
-              command: echo -n "HTCondor9#" | sh -c "condor_store_cred add -c -i -"
+              command: echo -n "HTCondor10#" | sh -c "condor_store_cred add -c -i -"
             02-issue-condor-token:
               command: export MY_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4) && sh -c "umask 0077; condor_token_create -identity condor@${MY_IP} > /etc/condor/tokens.d/condor@${MY_IP}"
             03-configure-iptables:
