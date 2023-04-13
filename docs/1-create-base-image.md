@@ -27,7 +27,7 @@ on AWS, or you may create one yourself if you'd like to include other dependenci
 
 1. **NOTE:** Currently, **CentOS 7** is required for network settings. The AMI must have [awscli](https://aws.amazon.com/cli/), the [CloudWatch Logs agent](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/QuickStartEC2Instance.html), and [cfn-signal](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-helper-scripts-reference.html) installed to correctly provision
 1. Launch the EC2 instance you will use to create your AMI: [Launch your instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/LaunchingAndUsingInstances.html)
-1. Configure your EC2 instance to allow connections: [Connect to your Linx instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AccessingInstances.html)
+1. Configure your EC2 instance to allow connections: [Connect to your Linux instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AccessingInstances.html)
 1. Connect to your instance (e.g., using System Manager (SSM) or with SSH)
 1. Install all necessary software (see **1.** above)
 1. You may create separate AMIs for the HTCondor Control Node and Worker Nodes, if desired
