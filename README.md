@@ -16,7 +16,7 @@ project and [Cloud Hosting Solutions](https://www.usgs.gov/associate-chief-i
 
 ## Overview
 
-The [htcondor-centos-7.yml](./cloudformation/htcondor-centos-7.yml) and [htcondor-amazon-linux-2.yml](../cloudformation/htcondor-amazon-linux-2.yml) template files in this
+The [htcondor-centos-7.yml](./cloudformation/htcondor-centos-7.yml) and [htcondor-amazon-linux-2.yml](./cloudformation/htcondor-amazon-linux-2.yml) template files in this
 repository each create a CloudFormation stack with all necessary AWS resources for
 a Linux-based HTCondor cluster on-demand. This version is an Alpha release
 (v. 0.1) with new capabilities and further documentation to come.
