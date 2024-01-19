@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  # connection: local
+  become: true
+  # become_method: sudo
+
+  roles:
+  - base
+  - docker
+  - condor
+  - init_scripts

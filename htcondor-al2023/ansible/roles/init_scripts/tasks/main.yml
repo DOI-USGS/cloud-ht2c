@@ -1,0 +1,24 @@
+---
+- name: Copy CONTROL NODE initialization script
+  ansible.builtin.copy:
+    src: initialize-controller.sh
+    dest: /etc/condor/initialize-controller.sh
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy WORKER NODE initialization script
+  ansible.builtin.copy:
+    src: initialize-worker.sh
+    dest: /etc/condor/initialize-worker.sh
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy WORKER NODE SHUTDOWN script
+  ansible.builtin.copy:
+    src: shutdown-worker.sh
+    dest: /etc/condor/shutdown-worker.sh
+    owner: root
+    group: root
+    mode: '0744'
