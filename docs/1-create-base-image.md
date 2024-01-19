@@ -7,7 +7,7 @@ HTCondor nodes can be launched with pre-staged software in the form of [Amazon M
 - [ssm-agent](https://docs.aws.amazon.com/systems-manager/latest/userguide/ssm-agent.html)
 - [HTCondor](https://htcondor.readthedocs.io/en/latest/getting-htcondor/admin-quick-start.html) (latest version using **get_htcondor**)
 
-The HTCondor cluster instances must run either Amazon Linux 2 or CentOS 7 at this time. The official AMIs for use in the following US regions are:
+The HTCondor cluster stacks can only deploy on Amazon Linux 2 or CentOS 7 AMIs at this time. The official AMIs for use in the following US regions are:
 
 - Amazon Linux 2
   - `ami-0df24e148fdb9f1d8` will work in the `us-west-2` region **only** (default)
@@ -19,6 +19,18 @@ The HTCondor cluster instances must run either Amazon Linux 2 or CentOS 7 at thi
   - `ami-0dee0f906cf114191` will work in the `us-west-1` region **only**
   - `ami-05a36e1502605b4aa` will work in the `us-east-2` region **only**
   - `ami-002070d43b0a4f171` will work in the `us-east-1` region **only**
+
+The HTCondor cluster functional with Amazon Linux 2023 is the most recent version of the stack and is compatible with HTCondor v23. You must create this AMI before launching the CloudFormation Stack:
+
+1. Launch an EC2 in your desired region running Amazon Linux 2023
+1. Install `ansible` with `yum install -y ansible`
+1. Connect to your instance, and run the Ansible Playbook included in this repo at [htcondor-al2023/ansible/playbook.yml](../htcondor-al2023/ansible/playbook.yml) with:
+
+```bash
+ansible-pull -U https://github.com/DOI-USGS/cloud-ht2c.git htcondor/ansible/playbook.yml
+```
+
+1. Create an AMI from the EC2 instance's current state (see below)
 
 You may [Find a Linux AMI](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html)
 on AWS, or you may create one yourself if you'd like to include other dependencies (e.g., Docker) prior to launching the cluster (but note that `cfn-bootstrap`, `awscliv2`, and `HTCondor` are installed on all instances at boot time). General information on creating an AMI with an EC2 instance can be found in [Create your own AMI](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html#creating-an-ami), but the general steps are as follows:
