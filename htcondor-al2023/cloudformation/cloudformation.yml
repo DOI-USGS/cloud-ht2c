@@ -1539,30 +1539,24 @@ Resources:
               - Key: Name
                 Value: !Sub "${pNamePrefix}-htcondor-worker-volume"
         UserData:
-          Fn::Base64:
-            !Join
-              - ''
-              - - !Sub |
-                  #!/bin/bash -xe
-                  REGION=${AWS::Region}
-                  aws configure set default.region ${AWS::Region}
-                  STACK_NAME=${AWS::StackName}
-                  STACK_ID=${AWS::StackId}
-                  EFS_ID=${
-                - !If [ cCreateFileSystem, !Ref FileSystem, !Ref pEfsId ]
-                - !Sub |
-                  }
-                  CONTROL_NODE_IP=${ControlNodeInstance.PrivateIp}
-                  WORKER_TIMEOUT=${pWorkerNodeTimeout}
+          Fn::Base64: !Sub |
+            #!/bin/bash -xe
+            REGION=${AWS::Region}
+            aws configure set default.region ${AWS::Region}
+            STACK_NAME=${AWS::StackName}
+            STACK_ID=${AWS::StackId}
+            EFS_ID=${FileSystem}
+            CONTROL_NODE_IP=${ControlNodeInstance.PrivateIp}
+            WORKER_TIMEOUT=${pWorkerNodeTimeout}
 
-                  function error_exit {
-                    /opt/aws/bin/cfn-signal --exit-code 1 --reason '$1' --stack $STACK_NAME --resource WorkerNodeAutoscalingGroup
-                    exit 1
-                  }
+            function error_exit {
+              /opt/aws/bin/cfn-signal --exit-code 1 --reason '$1' --stack $STACK_NAME --resource WorkerNodeAutoscalingGroup
+              exit 1
+            }
 
-                  /bin/bash /etc/condor/initialize-worker.sh -r $REGION -n $STACK_NAME -s $STACK_ID -e $EFS_ID -i $CONTROL_NODE_IP -t $WORKER_TIMEOUT >> /var/log/initialize_log.log 2>&1
+            /bin/bash /etc/condor/initialize-worker.sh -r $REGION -n $STACK_NAME -s $STACK_ID -e $EFS_ID -i $CONTROL_NODE_IP -t $WORKER_TIMEOUT >> /var/log/initialize_log.log 2>&1
 
-                  /opt/aws/bin/cfn-signal --region $REGION --success true --stack $STACK_NAME --resource WorkerNodeAutoscalingGroup
+            /opt/aws/bin/cfn-signal --region $REGION --success true --stack $STACK_NAME --resource WorkerNodeAutoscalingGroup
 
   # ### Control Node
   ControlNodeSshKey:
@@ -1602,26 +1596,21 @@ Resources:
           Value: !Sub "${pNamePrefix}-htcondor-control-node"
       PropagateTagsToVolumeOnCreation: true
       UserData:
-        Fn::Base64:
-          !Join
-            - ''
-            - - !Sub |
-                #!/bin/bash -xe
-                REGION=${AWS::Region}
-                aws configure set default.region ${AWS::Region}
-                STACK_NAME="${AWS::StackName}"
-                STACK_ID=${AWS::StackId}
-                EFS_ID=${
-              - !If [ cCreateFileSystem, !Ref FileSystem, !Ref pEfsId ]
-              - !Sub |
-                function error_exit {
-                  /opt/aws/bin/cfn-signal --exit-code 1 --reason '$1' --stack $STACK_NAME --resource ControlNodeInstance
-                  exit 1
-                }
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          REGION=${AWS::Region}
+          aws configure set default.region ${AWS::Region}
+          STACK_NAME="${AWS::StackName}"
+          STACK_ID=${AWS::StackId}
+          EFS_ID=${FileSystem}
+          function error_exit {
+            /opt/aws/bin/cfn-signal --exit-code 1 --reason '$1' --stack $STACK_NAME --resource ControlNodeInstance
+            exit 1
+          }
 
-                /bin/bash /etc/condor/initialize-controller.sh -r $REGION -n $STACK_NAME -s $STACK_ID -e $EFS_ID >> /var/log/initialize_log.log 2>&1
+          /bin/bash /etc/condor/initialize-controller.sh -r $REGION -n $STACK_NAME -s $STACK_ID -e $EFS_ID >> /var/log/initialize_log.log 2>&1
 
-                /opt/aws/bin/cfn-signal --region $REGION --success true --stack $STACK_NAME --resource ControlNodeInstance
+          /opt/aws/bin/cfn-signal --region $REGION --success true --stack $STACK_NAME --resource ControlNodeInstance
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
