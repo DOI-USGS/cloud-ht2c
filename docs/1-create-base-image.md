@@ -27,7 +27,9 @@ The HTCondor cluster functional with Amazon Linux 2023 is the most recent versio
 1. Connect to your instance, and run the Ansible Playbook included in this repo at [htcondor-al2023/ansible/playbook.yml](../htcondor-al2023/ansible/playbook.yml) with:
 
 ```bash
-ansible-pull -U https://github.com/DOI-USGS/cloud-ht2c.git htcondor/ansible/playbook.yml
+ansible-pull -U https://github.com/DOI-USGS/cloud-ht2c.git -i localhost htcondor-al2023/ansible/playbook.yml
+# Or, to check the ansible configuration using a particular git repo branch:
+ansible-pull -U https://github.com/DOI-USGS/cloud-ht2c.git -i localhost htcondor-al2023/ansible/playbook.yml --check --checkout 2-bring-into-parity-with-chs-stack
 ```
 
 1. Create an AMI from the EC2 instance's current state (see below)
