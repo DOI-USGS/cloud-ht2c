@@ -1278,6 +1278,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
         - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
         - arn:aws:iam::aws:policy/ReadOnlyAccess
       Policies:
         - PolicyName: BootupPermissions
@@ -1307,6 +1308,15 @@ Resources:
                   - s3:Replicate*
                   - s3:RestoreObject
                 Resource: '*'
+        - PolicyName: AutoscalingTerminationPermissions
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: AsgTerminateInstance
+                Effect: Allow
+                Action:
+                  - autoscaling:TerminateInstanceInAutoScalingGroup
+                Resource: !Sub "arn:aws:autoscaling:*:${AWS::AccountId}:autoScalingGroup:*:autoScalingGroupName/*"
 
   WorkerNodeInstanceProfile:
     Type: AWS::IAM::InstanceProfile
