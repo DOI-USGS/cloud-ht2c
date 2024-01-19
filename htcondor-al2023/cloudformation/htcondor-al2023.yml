@@ -18,7 +18,7 @@ Metadata:
           - pControlNodeVolumeSize
           - pControlNodeAmiId
           - pSshCidrIp
-          - UseSsh
+          - pUseSsh
           - pControlNodeSshKey
       - Label:
           default: Worker Configuration
@@ -57,7 +57,7 @@ Metadata:
         default: Control Node AMI ID
       pSshCidrIp:
         default: CIDR for SSH to Control Node
-      UseSsh:
+      pUseSsh:
         default: Use SSH with Control Node?
       pControlNodeSshKey:
         default: EC2 Key Pair Name for SSH
