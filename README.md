@@ -9,17 +9,22 @@ project and [Cloud Hosting Solutions](https://www.usgs.gov/associate-chief-i
 
 - AWS Account
 - AWS account access with privileges to create required resources in
-[htcondor-centos-7.yml](./cloudformation/htcondor-centos-7.yml) or [htcondor-amazon-linux-2.yml](./cloudformation/htcondor-amazon-linux-2.yml) 
+[htcondor-centos-7.yml](./htcondor-centos7/cloudformation/htcondor-centos-7.yml)
+or
+[htcondor-amazon-linux-2.yml](./htcondor-al2/cloudformation/htcondor-amazon-linux-2.yml)
 - AWS VPC with at least three subnets
 - AWS Amazon Machine Image (AMI) using CentOS 7 for Control and Worker Nodes
 - Data to process
 
 ## Overview
 
-The [htcondor-centos-7.yml](./cloudformation/htcondor-centos-7.yml) and [htcondor-amazon-linux-2.yml](./cloudformation/htcondor-amazon-linux-2.yml) template files in this
-repository each create a CloudFormation stack with all necessary AWS resources for
-a Linux-based HTCondor cluster on-demand. This version is an Alpha release
-(v. 0.1) with new capabilities and further documentation to come.
+The [htcondor-centos-7.yml](./htcondor-centos7/cloudformation/htcondor-centos-7.yml)
+and
+[htcondor-amazon-linux-2.yml](./htcondor-al2/cloudformation/htcondor-amazon-linux-2.yml)
+template files in this repository each create a CloudFormation stack with all
+necessary AWS resources for a Linux-based HTCondor cluster on-demand.
+This version is an Alpha release (v. 0.1) with new
+capabilities and further documentation to come.
 
 ## Documentation
 
@@ -39,14 +44,15 @@ a Linux-based HTCondor cluster on-demand. This version is an Alpha releas
 ## Information for PEST users
 A common application for this software will be distributed model analysis using
 [PEST](http://pesthomepage.org) and [PEST++](https://github.com/usgs/pestpp/).
-For information on integrating PEST/PEST++ with HTCondor, see
-[Fienen and Hunt, 2015](https://ngwa.onlinelibrary.wiley.com/doi/10.1111/gwat.12320).
+For information on integrating PEST/PEST++ with HTCondor, see [Fienen and Hunt,
+2015](https://ngwa.onlinelibrary.wiley.com/doi/10.1111/gwat.12320).
 
 The port range of 9700-9710 is available for PEST/PEST++ communications between
 the Control Node and Worker Nodes.
 
 ## Background for HTCondor
-A couple trivial [examples](https://github.com/mnfienen/HTCondorHelloWorld), including one using PEST, for using HTCondor are available for new users.
+A couple trivial [examples](https://github.com/mnfienen/HTCondorHelloWorld),
+including one using PEST, for using HTCondor are available for new users.
 
 ## Contact Information
 
