@@ -1,0 +1,1626 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: HTCondor Cluster for Amazon Linux 2023
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Network Configuration
+        Parameters:
+          - pNamePrefix
+          - pVPCID
+          - pSubnets
+          - pAllowedCidrIp
+      - Label:
+          default: Controller Configuration
+        Parameters:
+          - pControlNodeInstanceType
+          - pControlNodeVolumeSize
+          - pControlNodeAmiId
+          - pSshCidrIp
+          - pUseSsh
+          - pControlNodeSshKey
+      - Label:
+          default: Worker Configuration
+        Parameters:
+          - pNumberOfWorkerNodes
+          - pWorkerNodeInstanceType
+          - pWorkerNodeVolumeSize
+          - pWorkerNodeAmiId
+      - Label:
+          default: Spot Instance Configuration
+        Parameters:
+          - pUseSpotInstances
+          - pWorkerSpotNodeInstanceType1
+          - pWorkerSpotNodeInstanceType2
+          - pWorkerSpotNodeInstanceType3
+      - Label:
+          default: Advanced Configuration
+        Parameters:
+          - pEfsId
+          - pControlNodeInstanceProfile
+          - pWorkerNodeInstanceProfile
+    ParameterLabels:
+      pNamePrefix:
+        default: Name Prefix
+      pVPCID:
+        default: VPC
+      pSubnets:
+        default: Subnets (Select 3)
+      pAllowedCidrIp:
+        default: CIDR Range with access to the Control Node
+      pControlNodeInstanceType:
+        default: Control Node Instance Type
+      pControlNodeVolumeSize:
+        default: Control Node Volume Size
+      pControlNodeAmiId:
+        default: Control Node AMI ID
+      pSshCidrIp:
+        default: CIDR for SSH to Control Node
+      pUseSsh:
+        default: Use SSH with Control Node?
+      pControlNodeSshKey:
+        default: EC2 Key Pair Name for SSH
+      pNumberOfWorkerNodes:
+        default: Number of Worker Nodes to launch
+      pWorkerNodeInstanceType:
+        default: Worker Node Instance Type
+      pWorkerNodeVolumeSize:
+        default: Worker Node Volume Size
+      pWorkerNodeAmiId:
+        default: Worker Node AMI ID
+      pUseSpotInstances:
+        default: Use Spot Instances
+      pWorkerSpotNodeInstanceType1:
+        default: (Optional) Spot Instance Type 1
+      pWorkerSpotNodeInstanceType2:
+        default: (Optional) Spot Instance Type 2
+      pWorkerSpotNodeInstanceType3:
+        default: (Optional) Spot Instance Type 3
+      pEfsId:
+        default: Existing EFS ID
+      pControlNodeInstanceProfile:
+        default: Control Node Instance Profile
+      pWorkerNodeInstanceProfile:
+        default: Worker Node Instance Profile
+
+Parameters:
+  pNamePrefix:
+    Type: String
+    Default: ""
+    Description: Enter a unique prefix to help identify your cluster's specific resources
+  pVPCID:
+    Description: VPC Id for deployment
+    Type: AWS::EC2::VPC::Id
+  pSubnets:
+    Description: Subnets for deployment
+    Type: List<AWS::EC2::Subnet::Id>
+  pAllowedCidrIp:
+    Type: String
+    Default: 0.0.0.0/0
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Description: Input the CIDR range of the selected VPC.
+
+  pNumberOfWorkerNodes:
+    Description: The number of Worker Nodes to spin up. Update this parameter to alter available compute power or save on costs.
+    Type: Number
+    Default: 2
+    MinValue: 0
+  pWorkerNodeVolumeSize:
+    Description: The EBS volume size of the Worker Nodes.
+    Type: Number
+    Default: 64
+    MinValue: 20
+  pWorkerNodeInstanceType:
+    Description: Instance type for Worker Nodes
+    Type: String
+    Default: t3.micro
+    AllowedValues:
+      - c5.12xlarge
+      - c5.18xlarge
+      - c5.24xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+      - c5.9xlarge
+      - c5.large
+      - c5.xlarge
+      - c5a.12xlarge
+      - c5a.16xlarge
+      - c5a.24xlarge
+      - c5a.2xlarge
+      - c5a.4xlarge
+      - c5a.8xlarge
+      - c5a.large
+      - c5a.xlarge
+      - c5ad.12xlarge
+      - c5ad.16xlarge
+      - c5ad.24xlarge
+      - c5ad.2xlarge
+      - c5ad.4xlarge
+      - c5ad.8xlarge
+      - c5ad.large
+      - c5ad.xlarge
+      - c5d.12xlarge
+      - c5d.18xlarge
+      - c5d.24xlarge
+      - c5d.2xlarge
+      - c5d.4xlarge
+      - c5d.9xlarge
+      - c5d.large
+      - c5d.xlarge
+      - c5n.18xlarge
+      - c5n.2xlarge
+      - c5n.4xlarge
+      - c5n.9xlarge
+      - c5n.large
+      - c5n.xlarge
+      - c7a.12xlarge
+      - c7a.16xlarge
+      - c7a.24xlarge
+      - c7a.2xlarge
+      - c7a.32xlarge
+      - c7a.48xlarge
+      - c7a.4xlarge
+      - c7a.8xlarge
+      - c7a.large
+      - c7a.medium
+      - c7a.xlarge
+      - c7g.12xlarge
+      - c7g.16xlarge
+      - c7g.2xlarge
+      - c7g.4xlarge
+      - c7g.8xlarge
+      - c7g.large
+      - c7g.medium
+      - c7g.xlarge
+      - c7gd.12xlarge
+      - c7gd.16xlarge
+      - c7gd.2xlarge
+      - c7gd.4xlarge
+      - c7gd.8xlarge
+      - c7gd.large
+      - c7gd.medium
+      - c7gd.xlarge
+      - c7gn.12xlarge
+      - c7gn.16xlarge
+      - c7gn.2xlarge
+      - c7gn.4xlarge
+      - c7gn.8xlarge
+      - c7gn.large
+      - c7gn.medium
+      - c7gn.xlarge
+      - c7i.12xlarge
+      - c7i.16xlarge
+      - c7i.24xlarge
+      - c7i.2xlarge
+      - c7i.48xlarge
+      - c7i.4xlarge
+      - c7i.8xlarge
+      - c7i.large
+      - c7i.xlarge
+      - m7a.12xlarge
+      - m7a.16xlarge
+      - m7a.24xlarge
+      - m7a.2xlarge
+      - m7a.32xlarge
+      - m7a.48xlarge
+      - m7a.4xlarge
+      - m7a.8xlarge
+      - m7a.large
+      - m7a.medium
+      - m7a.xlarge
+      - m7g.12xlarge
+      - m7g.16xlarge
+      - m7g.2xlarge
+      - m7g.4xlarge
+      - m7g.8xlarge
+      - m7g.large
+      - m7g.medium
+      - m7g.xlarge
+      - m7gd.12xlarge
+      - m7gd.16xlarge
+      - m7gd.2xlarge
+      - m7gd.4xlarge
+      - m7gd.8xlarge
+      - m7gd.large
+      - m7gd.medium
+      - m7gd.xlarge
+      - m7i-flex.2xlarge
+      - m7i-flex.4xlarge
+      - m7i-flex.8xlarge
+      - m7i-flex.large
+      - m7i-flex.xlarge
+      - m7i.12xlarge
+      - m7i.16xlarge
+      - m7i.24xlarge
+      - m7i.2xlarge
+      - m7i.48xlarge
+      - m7i.4xlarge
+      - m7i.8xlarge
+      - m7i.large
+      - m7i.xlarge
+      - p2.16xlarge
+      - p2.8xlarge
+      - p2.xlarge
+      - p3.16xlarge
+      - p3.2xlarge
+      - p3.8xlarge
+      - p3dn.24xlarge
+      - p4d.24xlarge
+      - p5.48xlarge
+      - r7a.12xlarge
+      - r7a.16xlarge
+      - r7a.24xlarge
+      - r7a.2xlarge
+      - r7a.32xlarge
+      - r7a.48xlarge
+      - r7a.4xlarge
+      - r7a.8xlarge
+      - r7a.large
+      - r7a.medium
+      - r7a.xlarge
+      - r7g.12xlarge
+      - r7g.16xlarge
+      - r7g.2xlarge
+      - r7g.4xlarge
+      - r7g.8xlarge
+      - r7g.large
+      - r7g.medium
+      - r7g.xlarge
+      - r7gd.12xlarge
+      - r7gd.16xlarge
+      - r7gd.2xlarge
+      - r7gd.4xlarge
+      - r7gd.8xlarge
+      - r7gd.large
+      - r7gd.medium
+      - r7gd.xlarge
+      - r7i.12xlarge
+      - r7i.16xlarge
+      - r7i.24xlarge
+      - r7i.2xlarge
+      - r7i.48xlarge
+      - r7i.4xlarge
+      - r7i.8xlarge
+      - r7i.large
+      - r7i.xlarge
+      - r7iz.12xlarge
+      - r7iz.16xlarge
+      - r7iz.2xlarge
+      - r7iz.32xlarge
+      - r7iz.4xlarge
+      - r7iz.8xlarge
+      - r7iz.large
+      - r7iz.xlarge
+      - t3.2xlarge
+      - t3.large
+      - t3.medium
+      - t3.micro
+      - t3.nano
+      - t3.small
+      - t3.xlarge
+      - t3a.2xlarge
+      - t3a.large
+      - t3a.medium
+      - t3a.micro
+      - t3a.nano
+      - t3a.small
+      - t3a.xlarge
+
+  pWorkerNodeTimeout:
+    Description: The Idle Time in seconds a Worker Node is allowed to exist before it is terminated. Set value to 0 to disable auto termination of idle Worker Nodes.
+    Type: Number
+    Default: 600
+  pWorkerNodeKillSwitchTimeStamp:
+    Description: If specified, executes a hard scale-in of all worker nodes in the AutoScaling Group to zero instances at the designated timestamp (UTC, 24-hr time notation). Enter "NULL" if you do not wish to enable a hard termination timestamp for your Worker Nodes. Timestamp must be formatted as "YYYY-MM-ddTHH:mm:ssZ", e.g. "2023-01-01T22:00:00Z"
+    Type: String
+    Default: "NULL"
+    AllowedPattern: '^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)$|^(NULL)$'
+    ConstraintDescription: Malformed input-Parameter - pWorkerNodeKillSwitchTimeStamp must either be 'NULL' or follow the format '^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)$'
+  pWorkerNodeAmiId:
+    Description: The AMI to run the HTCondor Worker nodes on. Needs to have minimum required software installed.
+    Type: AWS::EC2::Image::Id
+    Default: ami-0df24e148fdb9f1d8
+
+  pControlNodeVolumeSize:
+    Description: "The EBS volume size of the Control Node. NOTE: AWS Elastic File System storage is comes configured on the Control Node."
+    Type: Number
+    Default: 64
+    MinValue: 20
+  pControlNodeInstanceType:
+    Description: Instance type for the Control Node
+    Type: String
+    Default: t3.micro
+    AllowedValues:
+      - c5.12xlarge
+      - c5.18xlarge
+      - c5.24xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+      - c5.9xlarge
+      - c5.large
+      - c5.xlarge
+      - c5a.12xlarge
+      - c5a.16xlarge
+      - c5a.24xlarge
+      - c5a.2xlarge
+      - c5a.4xlarge
+      - c5a.8xlarge
+      - c5a.large
+      - c5a.xlarge
+      - c5ad.12xlarge
+      - c5ad.16xlarge
+      - c5ad.24xlarge
+      - c5ad.2xlarge
+      - c5ad.4xlarge
+      - c5ad.8xlarge
+      - c5ad.large
+      - c5ad.xlarge
+      - c5d.12xlarge
+      - c5d.18xlarge
+      - c5d.24xlarge
+      - c5d.2xlarge
+      - c5d.4xlarge
+      - c5d.9xlarge
+      - c5d.large
+      - c5d.xlarge
+      - c5n.18xlarge
+      - c5n.2xlarge
+      - c5n.4xlarge
+      - c5n.9xlarge
+      - c5n.large
+      - c5n.xlarge
+      - c7a.12xlarge
+      - c7a.16xlarge
+      - c7a.24xlarge
+      - c7a.2xlarge
+      - c7a.32xlarge
+      - c7a.48xlarge
+      - c7a.4xlarge
+      - c7a.8xlarge
+      - c7a.large
+      - c7a.medium
+      - c7a.xlarge
+      - c7g.12xlarge
+      - c7g.16xlarge
+      - c7g.2xlarge
+      - c7g.4xlarge
+      - c7g.8xlarge
+      - c7g.large
+      - c7g.medium
+      - c7g.xlarge
+      - c7gd.12xlarge
+      - c7gd.16xlarge
+      - c7gd.2xlarge
+      - c7gd.4xlarge
+      - c7gd.8xlarge
+      - c7gd.large
+      - c7gd.medium
+      - c7gd.xlarge
+      - c7gn.12xlarge
+      - c7gn.16xlarge
+      - c7gn.2xlarge
+      - c7gn.4xlarge
+      - c7gn.8xlarge
+      - c7gn.large
+      - c7gn.medium
+      - c7gn.xlarge
+      - c7i.12xlarge
+      - c7i.16xlarge
+      - c7i.24xlarge
+      - c7i.2xlarge
+      - c7i.48xlarge
+      - c7i.4xlarge
+      - c7i.8xlarge
+      - c7i.large
+      - c7i.xlarge
+      - m7a.12xlarge
+      - m7a.16xlarge
+      - m7a.24xlarge
+      - m7a.2xlarge
+      - m7a.32xlarge
+      - m7a.48xlarge
+      - m7a.4xlarge
+      - m7a.8xlarge
+      - m7a.large
+      - m7a.medium
+      - m7a.xlarge
+      - m7g.12xlarge
+      - m7g.16xlarge
+      - m7g.2xlarge
+      - m7g.4xlarge
+      - m7g.8xlarge
+      - m7g.large
+      - m7g.medium
+      - m7g.xlarge
+      - m7gd.12xlarge
+      - m7gd.16xlarge
+      - m7gd.2xlarge
+      - m7gd.4xlarge
+      - m7gd.8xlarge
+      - m7gd.large
+      - m7gd.medium
+      - m7gd.xlarge
+      - m7i-flex.2xlarge
+      - m7i-flex.4xlarge
+      - m7i-flex.8xlarge
+      - m7i-flex.large
+      - m7i-flex.xlarge
+      - m7i.12xlarge
+      - m7i.16xlarge
+      - m7i.24xlarge
+      - m7i.2xlarge
+      - m7i.48xlarge
+      - m7i.4xlarge
+      - m7i.8xlarge
+      - m7i.large
+      - m7i.xlarge
+      - p2.16xlarge
+      - p2.8xlarge
+      - p2.xlarge
+      - p3.16xlarge
+      - p3.2xlarge
+      - p3.8xlarge
+      - p3dn.24xlarge
+      - p4d.24xlarge
+      - p5.48xlarge
+      - r7a.12xlarge
+      - r7a.16xlarge
+      - r7a.24xlarge
+      - r7a.2xlarge
+      - r7a.32xlarge
+      - r7a.48xlarge
+      - r7a.4xlarge
+      - r7a.8xlarge
+      - r7a.large
+      - r7a.medium
+      - r7a.xlarge
+      - r7g.12xlarge
+      - r7g.16xlarge
+      - r7g.2xlarge
+      - r7g.4xlarge
+      - r7g.8xlarge
+      - r7g.large
+      - r7g.medium
+      - r7g.xlarge
+      - r7gd.12xlarge
+      - r7gd.16xlarge
+      - r7gd.2xlarge
+      - r7gd.4xlarge
+      - r7gd.8xlarge
+      - r7gd.large
+      - r7gd.medium
+      - r7gd.xlarge
+      - r7i.12xlarge
+      - r7i.16xlarge
+      - r7i.24xlarge
+      - r7i.2xlarge
+      - r7i.48xlarge
+      - r7i.4xlarge
+      - r7i.8xlarge
+      - r7i.large
+      - r7i.xlarge
+      - r7iz.12xlarge
+      - r7iz.16xlarge
+      - r7iz.2xlarge
+      - r7iz.32xlarge
+      - r7iz.4xlarge
+      - r7iz.8xlarge
+      - r7iz.large
+      - r7iz.xlarge
+      - t3.2xlarge
+      - t3.large
+      - t3.medium
+      - t3.micro
+      - t3.nano
+      - t3.small
+      - t3.xlarge
+      - t3a.2xlarge
+      - t3a.large
+      - t3a.medium
+      - t3a.micro
+      - t3a.nano
+      - t3a.small
+      - t3a.xlarge
+
+  pControlNodeAmiId:
+    Description: The AMI to run the HTCondor Controller node on. Needs to have minimum required software installed.
+    Type: AWS::EC2::Image::Id
+    Default: ami-0df24e148fdb9f1d8
+  pSshCidrIp:
+    Type: String
+    Default: 0.0.0.0/0
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Description: IP address (in CIDR notation) or CIDR block to allow SSH access to Control Node
+  pUseSsh:
+    Description: "Use a new or existing EC2 Key Pair for SSH on the Control Node (experimental feature in testing)"
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+  pControlNodeSshKey:
+    Description: "The name of an existing EC2 key pair to use for the Control Node (type must be `ed25519`). Leave blank to create a new key."
+    Type: String
+    Default: ''
+
+  pUseSpotInstances:
+    Description: Whether to use Spot Instance for the worker nodes
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+  pWorkerSpotNodeInstanceType1:
+    Type: String
+    Description: An additional instance type to use in the Spot Pool for Worker Instances
+    Default: ''
+    AllowedValues:
+      - ''
+      - c5.12xlarge
+      - c5.18xlarge
+      - c5.24xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+      - c5.9xlarge
+      - c5.large
+      - c5.xlarge
+      - c5a.12xlarge
+      - c5a.16xlarge
+      - c5a.24xlarge
+      - c5a.2xlarge
+      - c5a.4xlarge
+      - c5a.8xlarge
+      - c5a.large
+      - c5a.xlarge
+      - c5ad.12xlarge
+      - c5ad.16xlarge
+      - c5ad.24xlarge
+      - c5ad.2xlarge
+      - c5ad.4xlarge
+      - c5ad.8xlarge
+      - c5ad.large
+      - c5ad.xlarge
+      - c5d.12xlarge
+      - c5d.18xlarge
+      - c5d.24xlarge
+      - c5d.2xlarge
+      - c5d.4xlarge
+      - c5d.9xlarge
+      - c5d.large
+      - c5d.xlarge
+      - c5n.18xlarge
+      - c5n.2xlarge
+      - c5n.4xlarge
+      - c5n.9xlarge
+      - c5n.large
+      - c5n.xlarge
+      - c7a.12xlarge
+      - c7a.16xlarge
+      - c7a.24xlarge
+      - c7a.2xlarge
+      - c7a.32xlarge
+      - c7a.48xlarge
+      - c7a.4xlarge
+      - c7a.8xlarge
+      - c7a.large
+      - c7a.medium
+      - c7a.xlarge
+      - c7g.12xlarge
+      - c7g.16xlarge
+      - c7g.2xlarge
+      - c7g.4xlarge
+      - c7g.8xlarge
+      - c7g.large
+      - c7g.medium
+      - c7g.xlarge
+      - c7gd.12xlarge
+      - c7gd.16xlarge
+      - c7gd.2xlarge
+      - c7gd.4xlarge
+      - c7gd.8xlarge
+      - c7gd.large
+      - c7gd.medium
+      - c7gd.xlarge
+      - c7gn.12xlarge
+      - c7gn.16xlarge
+      - c7gn.2xlarge
+      - c7gn.4xlarge
+      - c7gn.8xlarge
+      - c7gn.large
+      - c7gn.medium
+      - c7gn.xlarge
+      - c7i.12xlarge
+      - c7i.16xlarge
+      - c7i.24xlarge
+      - c7i.2xlarge
+      - c7i.48xlarge
+      - c7i.4xlarge
+      - c7i.8xlarge
+      - c7i.large
+      - c7i.xlarge
+      - m7a.12xlarge
+      - m7a.16xlarge
+      - m7a.24xlarge
+      - m7a.2xlarge
+      - m7a.32xlarge
+      - m7a.48xlarge
+      - m7a.4xlarge
+      - m7a.8xlarge
+      - m7a.large
+      - m7a.medium
+      - m7a.xlarge
+      - m7g.12xlarge
+      - m7g.16xlarge
+      - m7g.2xlarge
+      - m7g.4xlarge
+      - m7g.8xlarge
+      - m7g.large
+      - m7g.medium
+      - m7g.xlarge
+      - m7gd.12xlarge
+      - m7gd.16xlarge
+      - m7gd.2xlarge
+      - m7gd.4xlarge
+      - m7gd.8xlarge
+      - m7gd.large
+      - m7gd.medium
+      - m7gd.xlarge
+      - m7i-flex.2xlarge
+      - m7i-flex.4xlarge
+      - m7i-flex.8xlarge
+      - m7i-flex.large
+      - m7i-flex.xlarge
+      - m7i.12xlarge
+      - m7i.16xlarge
+      - m7i.24xlarge
+      - m7i.2xlarge
+      - m7i.48xlarge
+      - m7i.4xlarge
+      - m7i.8xlarge
+      - m7i.large
+      - m7i.xlarge
+      - p2.16xlarge
+      - p2.8xlarge
+      - p2.xlarge
+      - p3.16xlarge
+      - p3.2xlarge
+      - p3.8xlarge
+      - p3dn.24xlarge
+      - p4d.24xlarge
+      - p5.48xlarge
+      - r7a.12xlarge
+      - r7a.16xlarge
+      - r7a.24xlarge
+      - r7a.2xlarge
+      - r7a.32xlarge
+      - r7a.48xlarge
+      - r7a.4xlarge
+      - r7a.8xlarge
+      - r7a.large
+      - r7a.medium
+      - r7a.xlarge
+      - r7g.12xlarge
+      - r7g.16xlarge
+      - r7g.2xlarge
+      - r7g.4xlarge
+      - r7g.8xlarge
+      - r7g.large
+      - r7g.medium
+      - r7g.xlarge
+      - r7gd.12xlarge
+      - r7gd.16xlarge
+      - r7gd.2xlarge
+      - r7gd.4xlarge
+      - r7gd.8xlarge
+      - r7gd.large
+      - r7gd.medium
+      - r7gd.xlarge
+      - r7i.12xlarge
+      - r7i.16xlarge
+      - r7i.24xlarge
+      - r7i.2xlarge
+      - r7i.48xlarge
+      - r7i.4xlarge
+      - r7i.8xlarge
+      - r7i.large
+      - r7i.xlarge
+      - r7iz.12xlarge
+      - r7iz.16xlarge
+      - r7iz.2xlarge
+      - r7iz.32xlarge
+      - r7iz.4xlarge
+      - r7iz.8xlarge
+      - r7iz.large
+      - r7iz.xlarge
+      - t3.2xlarge
+      - t3.large
+      - t3.medium
+      - t3.micro
+      - t3.nano
+      - t3.small
+      - t3.xlarge
+      - t3a.2xlarge
+      - t3a.large
+      - t3a.medium
+      - t3a.micro
+      - t3a.nano
+      - t3a.small
+      - t3a.xlarge
+  pWorkerSpotNodeInstanceType2:
+    Type: String
+    Description: An additional instance type to use in the Spot Pool for Worker Instances
+    Default: ''
+    AllowedValues:
+      - ''
+      - c5.12xlarge
+      - c5.18xlarge
+      - c5.24xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+      - c5.9xlarge
+      - c5.large
+      - c5.xlarge
+      - c5a.12xlarge
+      - c5a.16xlarge
+      - c5a.24xlarge
+      - c5a.2xlarge
+      - c5a.4xlarge
+      - c5a.8xlarge
+      - c5a.large
+      - c5a.xlarge
+      - c5ad.12xlarge
+      - c5ad.16xlarge
+      - c5ad.24xlarge
+      - c5ad.2xlarge
+      - c5ad.4xlarge
+      - c5ad.8xlarge
+      - c5ad.large
+      - c5ad.xlarge
+      - c5d.12xlarge
+      - c5d.18xlarge
+      - c5d.24xlarge
+      - c5d.2xlarge
+      - c5d.4xlarge
+      - c5d.9xlarge
+      - c5d.large
+      - c5d.xlarge
+      - c5n.18xlarge
+      - c5n.2xlarge
+      - c5n.4xlarge
+      - c5n.9xlarge
+      - c5n.large
+      - c5n.xlarge
+      - c7a.12xlarge
+      - c7a.16xlarge
+      - c7a.24xlarge
+      - c7a.2xlarge
+      - c7a.32xlarge
+      - c7a.48xlarge
+      - c7a.4xlarge
+      - c7a.8xlarge
+      - c7a.large
+      - c7a.medium
+      - c7a.xlarge
+      - c7g.12xlarge
+      - c7g.16xlarge
+      - c7g.2xlarge
+      - c7g.4xlarge
+      - c7g.8xlarge
+      - c7g.large
+      - c7g.medium
+      - c7g.xlarge
+      - c7gd.12xlarge
+      - c7gd.16xlarge
+      - c7gd.2xlarge
+      - c7gd.4xlarge
+      - c7gd.8xlarge
+      - c7gd.large
+      - c7gd.medium
+      - c7gd.xlarge
+      - c7gn.12xlarge
+      - c7gn.16xlarge
+      - c7gn.2xlarge
+      - c7gn.4xlarge
+      - c7gn.8xlarge
+      - c7gn.large
+      - c7gn.medium
+      - c7gn.xlarge
+      - c7i.12xlarge
+      - c7i.16xlarge
+      - c7i.24xlarge
+      - c7i.2xlarge
+      - c7i.48xlarge
+      - c7i.4xlarge
+      - c7i.8xlarge
+      - c7i.large
+      - c7i.xlarge
+      - m7a.12xlarge
+      - m7a.16xlarge
+      - m7a.24xlarge
+      - m7a.2xlarge
+      - m7a.32xlarge
+      - m7a.48xlarge
+      - m7a.4xlarge
+      - m7a.8xlarge
+      - m7a.large
+      - m7a.medium
+      - m7a.xlarge
+      - m7g.12xlarge
+      - m7g.16xlarge
+      - m7g.2xlarge
+      - m7g.4xlarge
+      - m7g.8xlarge
+      - m7g.large
+      - m7g.medium
+      - m7g.xlarge
+      - m7gd.12xlarge
+      - m7gd.16xlarge
+      - m7gd.2xlarge
+      - m7gd.4xlarge
+      - m7gd.8xlarge
+      - m7gd.large
+      - m7gd.medium
+      - m7gd.xlarge
+      - m7i-flex.2xlarge
+      - m7i-flex.4xlarge
+      - m7i-flex.8xlarge
+      - m7i-flex.large
+      - m7i-flex.xlarge
+      - m7i.12xlarge
+      - m7i.16xlarge
+      - m7i.24xlarge
+      - m7i.2xlarge
+      - m7i.48xlarge
+      - m7i.4xlarge
+      - m7i.8xlarge
+      - m7i.large
+      - m7i.xlarge
+      - p2.16xlarge
+      - p2.8xlarge
+      - p2.xlarge
+      - p3.16xlarge
+      - p3.2xlarge
+      - p3.8xlarge
+      - p3dn.24xlarge
+      - p4d.24xlarge
+      - p5.48xlarge
+      - r7a.12xlarge
+      - r7a.16xlarge
+      - r7a.24xlarge
+      - r7a.2xlarge
+      - r7a.32xlarge
+      - r7a.48xlarge
+      - r7a.4xlarge
+      - r7a.8xlarge
+      - r7a.large
+      - r7a.medium
+      - r7a.xlarge
+      - r7g.12xlarge
+      - r7g.16xlarge
+      - r7g.2xlarge
+      - r7g.4xlarge
+      - r7g.8xlarge
+      - r7g.large
+      - r7g.medium
+      - r7g.xlarge
+      - r7gd.12xlarge
+      - r7gd.16xlarge
+      - r7gd.2xlarge
+      - r7gd.4xlarge
+      - r7gd.8xlarge
+      - r7gd.large
+      - r7gd.medium
+      - r7gd.xlarge
+      - r7i.12xlarge
+      - r7i.16xlarge
+      - r7i.24xlarge
+      - r7i.2xlarge
+      - r7i.48xlarge
+      - r7i.4xlarge
+      - r7i.8xlarge
+      - r7i.large
+      - r7i.xlarge
+      - r7iz.12xlarge
+      - r7iz.16xlarge
+      - r7iz.2xlarge
+      - r7iz.32xlarge
+      - r7iz.4xlarge
+      - r7iz.8xlarge
+      - r7iz.large
+      - r7iz.xlarge
+      - t3.2xlarge
+      - t3.large
+      - t3.medium
+      - t3.micro
+      - t3.nano
+      - t3.small
+      - t3.xlarge
+      - t3a.2xlarge
+      - t3a.large
+      - t3a.medium
+      - t3a.micro
+      - t3a.nano
+      - t3a.small
+      - t3a.xlarge
+  pWorkerSpotNodeInstanceType3:
+    Type: String
+    Description: An additional instance type to use in the Spot Pool for Worker Instances
+    Default: ''
+    AllowedValues:
+      - ''
+      - c5.12xlarge
+      - c5.18xlarge
+      - c5.24xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+      - c5.9xlarge
+      - c5.large
+      - c5.xlarge
+      - c5a.12xlarge
+      - c5a.16xlarge
+      - c5a.24xlarge
+      - c5a.2xlarge
+      - c5a.4xlarge
+      - c5a.8xlarge
+      - c5a.large
+      - c5a.xlarge
+      - c5ad.12xlarge
+      - c5ad.16xlarge
+      - c5ad.24xlarge
+      - c5ad.2xlarge
+      - c5ad.4xlarge
+      - c5ad.8xlarge
+      - c5ad.large
+      - c5ad.xlarge
+      - c5d.12xlarge
+      - c5d.18xlarge
+      - c5d.24xlarge
+      - c5d.2xlarge
+      - c5d.4xlarge
+      - c5d.9xlarge
+      - c5d.large
+      - c5d.xlarge
+      - c5n.18xlarge
+      - c5n.2xlarge
+      - c5n.4xlarge
+      - c5n.9xlarge
+      - c5n.large
+      - c5n.xlarge
+      - c7a.12xlarge
+      - c7a.16xlarge
+      - c7a.24xlarge
+      - c7a.2xlarge
+      - c7a.32xlarge
+      - c7a.48xlarge
+      - c7a.4xlarge
+      - c7a.8xlarge
+      - c7a.large
+      - c7a.medium
+      - c7a.xlarge
+      - c7g.12xlarge
+      - c7g.16xlarge
+      - c7g.2xlarge
+      - c7g.4xlarge
+      - c7g.8xlarge
+      - c7g.large
+      - c7g.medium
+      - c7g.xlarge
+      - c7gd.12xlarge
+      - c7gd.16xlarge
+      - c7gd.2xlarge
+      - c7gd.4xlarge
+      - c7gd.8xlarge
+      - c7gd.large
+      - c7gd.medium
+      - c7gd.xlarge
+      - c7gn.12xlarge
+      - c7gn.16xlarge
+      - c7gn.2xlarge
+      - c7gn.4xlarge
+      - c7gn.8xlarge
+      - c7gn.large
+      - c7gn.medium
+      - c7gn.xlarge
+      - c7i.12xlarge
+      - c7i.16xlarge
+      - c7i.24xlarge
+      - c7i.2xlarge
+      - c7i.48xlarge
+      - c7i.4xlarge
+      - c7i.8xlarge
+      - c7i.large
+      - c7i.xlarge
+      - m7a.12xlarge
+      - m7a.16xlarge
+      - m7a.24xlarge
+      - m7a.2xlarge
+      - m7a.32xlarge
+      - m7a.48xlarge
+      - m7a.4xlarge
+      - m7a.8xlarge
+      - m7a.large
+      - m7a.medium
+      - m7a.xlarge
+      - m7g.12xlarge
+      - m7g.16xlarge
+      - m7g.2xlarge
+      - m7g.4xlarge
+      - m7g.8xlarge
+      - m7g.large
+      - m7g.medium
+      - m7g.xlarge
+      - m7gd.12xlarge
+      - m7gd.16xlarge
+      - m7gd.2xlarge
+      - m7gd.4xlarge
+      - m7gd.8xlarge
+      - m7gd.large
+      - m7gd.medium
+      - m7gd.xlarge
+      - m7i-flex.2xlarge
+      - m7i-flex.4xlarge
+      - m7i-flex.8xlarge
+      - m7i-flex.large
+      - m7i-flex.xlarge
+      - m7i.12xlarge
+      - m7i.16xlarge
+      - m7i.24xlarge
+      - m7i.2xlarge
+      - m7i.48xlarge
+      - m7i.4xlarge
+      - m7i.8xlarge
+      - m7i.large
+      - m7i.xlarge
+      - p2.16xlarge
+      - p2.8xlarge
+      - p2.xlarge
+      - p3.16xlarge
+      - p3.2xlarge
+      - p3.8xlarge
+      - p3dn.24xlarge
+      - p4d.24xlarge
+      - p5.48xlarge
+      - r7a.12xlarge
+      - r7a.16xlarge
+      - r7a.24xlarge
+      - r7a.2xlarge
+      - r7a.32xlarge
+      - r7a.48xlarge
+      - r7a.4xlarge
+      - r7a.8xlarge
+      - r7a.large
+      - r7a.medium
+      - r7a.xlarge
+      - r7g.12xlarge
+      - r7g.16xlarge
+      - r7g.2xlarge
+      - r7g.4xlarge
+      - r7g.8xlarge
+      - r7g.large
+      - r7g.medium
+      - r7g.xlarge
+      - r7gd.12xlarge
+      - r7gd.16xlarge
+      - r7gd.2xlarge
+      - r7gd.4xlarge
+      - r7gd.8xlarge
+      - r7gd.large
+      - r7gd.medium
+      - r7gd.xlarge
+      - r7i.12xlarge
+      - r7i.16xlarge
+      - r7i.24xlarge
+      - r7i.2xlarge
+      - r7i.48xlarge
+      - r7i.4xlarge
+      - r7i.8xlarge
+      - r7i.large
+      - r7i.xlarge
+      - r7iz.12xlarge
+      - r7iz.16xlarge
+      - r7iz.2xlarge
+      - r7iz.32xlarge
+      - r7iz.4xlarge
+      - r7iz.8xlarge
+      - r7iz.large
+      - r7iz.xlarge
+      - t3.2xlarge
+      - t3.large
+      - t3.medium
+      - t3.micro
+      - t3.nano
+      - t3.small
+      - t3.xlarge
+      - t3a.2xlarge
+      - t3a.large
+      - t3a.medium
+      - t3a.micro
+      - t3a.nano
+      - t3a.small
+      - t3a.xlarge
+
+  pEfsId:
+    Type: String
+    Default: ""
+    Description: Input the ID of an existing Elastic File System (fs-asdfasdf) to be attached to the Cluster Nodes. Leave blank to create a new filesystem.
+  pControlNodeInstanceProfile:
+    Type: String
+    Default: ""
+    Description: Leave blank to create a default role
+  pWorkerNodeInstanceProfile:
+    Type: String
+    Default: ""
+    Description: Leave blank to create a default role
+
+Rules:
+  SubnetsInVPC:
+    Assertions:
+      - Assert: !EachMemberIn
+          - !ValueOfAll
+            - AWS::EC2::Subnet::Id
+            - VpcId
+          - !RefAll 'AWS::EC2::VPC::Id'
+        AssertDescription: All subnets must in the VPC
+  Spot1UniqueWorkerType:
+    RuleCondition: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType1, '' ] ]
+    Assertions:
+      - Assert: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType1, !Ref pWorkerNodeInstanceType ] ]
+        AssertDescription: Spot Instance Type 1 CANNOT match Worker Node Instance Type
+  Spot2UniqueWorkerType:
+    RuleCondition: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType2, '' ] ]
+    Assertions:
+      - Assert: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType2, !Ref pWorkerNodeInstanceType ] ]
+        AssertDescription: Spot Instance Type 2 CANNOT match Worker Node Instance Type
+      - Assert: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType2, !Ref pWorkerSpotNodeInstanceType1 ] ]
+        AssertDescription: Spot Instance Type 2 CANNOT match Spot Instance Type 1
+      - Assert: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType1, '' ] ]
+        AssertDescription: Must specify Spot Instance Types in order. Spot Instance Type 1 CANNOT be blank if Spot Instance Type 2 is specified.
+  Spot3UniqueWorkerType:
+    RuleCondition: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType3, '' ] ]
+    Assertions:
+      - Assert: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType3, !Ref pWorkerNodeInstanceType ] ]
+        AssertDescription: Spot Instance Type 3 CANNOT match Worker Node Instance Type
+      - Assert: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType3, !Ref pWorkerSpotNodeInstanceType1 ] ]
+        AssertDescription: Spot Instance Type 3 CANNOT match Spot Instance Type 1
+      - Assert: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType3, !Ref pWorkerSpotNodeInstanceType2 ] ]
+        AssertDescription: Spot Instance Type 3 CANNOT match Spot Instance Type 2
+      - Assert: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType2, '' ] ]
+        AssertDescription: Must specify Spot Instance Types in order. Spot Instance Type 2 CANNOT be blank if Spot Instance Type 3 is specified.
+
+Conditions:
+  cCreateControlNodeInstanceProfile:  !Equals [ !Ref pControlNodeInstanceProfile, ""]
+  cCreateWorkerNodeInstanceProfile: !Equals [ !Ref pWorkerNodeInstanceProfile, ""]
+  cCreateFileSystem: !Equals [ !Ref pEfsId, "" ]
+  cLaunchWorkerNode: !Not [ !Equals [ !Ref pNumberOfWorkerNodes, 0 ] ]
+  cUseSpotInstances: !Equals [ !Ref pUseSpotInstances, true ]
+  cSpotType1Exists: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType1, '' ] ]
+  cSpotType2Exists: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType2, '' ] ]
+  cSpotType3Exists: !Not [ !Equals [ !Ref pWorkerSpotNodeInstanceType3, '' ] ]
+  cCreateWorkerNodeKillSwitch: !Not [ !Equals [ !Ref pWorkerNodeKillSwitchTimeStamp, 'NULL' ] ]
+  cUseSsh: !Equals [ !Ref pUseSsh, 'true' ]
+  cCreateControlNodeSshKey: !And [ !Condition cUseSsh, !Equals [ !Ref pControlNodeSshKey, '' ] ]
+  cDisableSsh: !Equals [ !Ref pUseSsh, 'false' ]
+
+
+Resources:
+  ControlNodeRole:
+    Type: AWS::IAM::Role
+    Condition: cCreateControlNodeInstanceProfile
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W11 # Cant predict resources
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      Policies:
+        - PolicyName: BootupPermissions
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: AutoScalingLifecycle
+                Effect: Allow
+                Action:
+                  - autoscaling:CompleteLifecycleAction
+                  - autoscaling:RecordLifecycleActionHeartbeat
+                  - cloudformation:SignalResource
+                  - ec2:*Tag*
+                Resource: '*'
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: S3Access
+                Effect: Allow
+                Action:
+                  - s3:AbortMultipartUpload
+                  - s3:DeleteObject*
+                  - s3:Get*
+                  - s3:List*
+                  - s3:PutObject
+                  - s3:Replicate*
+                  - s3:RestoreObject
+                Resource: '*'
+
+  ControlNodeInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Condition: cCreateControlNodeInstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref ControlNodeRole
+
+  WorkerNodeRole:
+    Type: AWS::IAM::Role
+    Condition: cCreateWorkerNodeInstanceProfile
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W11 # Cant predict resources
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      Policies:
+        - PolicyName: BootupPermissions
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: AutoScalingLifecycle
+                Effect: Allow
+                Action:
+                  - autoscaling:CompleteLifecycleAction
+                  - autoscaling:RecordLifecycleActionHeartbeat
+                  - cloudformation:SignalResource
+                  - ec2:*Tag*
+                Resource: '*'
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: S3Access
+                Effect: Allow
+                Action:
+                  - s3:AbortMultipartUpload
+                  - s3:DeleteObject*
+                  - s3:Get*
+                  - s3:List*
+                  - s3:PutObject
+                  - s3:Replicate*
+                  - s3:RestoreObject
+                Resource: '*'
+        - PolicyName: AutoscalingTerminationPermissions
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: AsgTerminateInstance
+                Effect: Allow
+                Action:
+                  - autoscaling:TerminateInstanceInAutoScalingGroup
+                Resource: !Sub "arn:aws:autoscaling:*:${AWS::AccountId}:autoScalingGroup:*:autoScalingGroupName/*"
+
+  WorkerNodeInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Condition: cCreateWorkerNodeInstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref WorkerNodeRole
+  ControlNodeSshSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W5  # Allow full egress
+          - id: W27 # Allow ingress through port range
+          - id: W36 # Descriptions not necessary
+          - id: W40 # Allow "-1" for all protocols
+    Properties:
+      GroupDescription: "HTCondor Control Node Security Group for SSHAccess"
+      VpcId: !Ref pVPCID
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+  ControlNodeSshIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: "Allow SSH traffic from USGS CIDRs"
+      GroupId: !Ref ControlNodeSshSecurityGroup
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      CidrIp: !Ref pSshCidrIp
+  VpcCidrSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W40 # Allow full egress
+          - id: W5  # Allow full egress
+          - id: W27 # Allow ingress through port range
+          - id: W36 # Descriptions not necessary
+    Properties:
+      VpcId: !Ref pVPCID
+      GroupDescription: Allows for communication on Condor ports from VPC
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          CidrIp: !Ref pAllowedCidrIp
+          FromPort: 9618
+          ToPort: 9618
+        - IpProtocol: tcp
+          CidrIp: !Ref pAllowedCidrIp
+          FromPort: 9700
+          ToPort: 9710
+
+  SelfReferencingSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W40 # Allow full egress
+          - id: W5  # Allow full egress
+          - id: W27 # Allow ingress through port range
+          - id: W36 # Descriptions not necessary
+    Properties:
+      VpcId: !Ref pVPCID
+      GroupDescription: Allows for communication between the Condor nodes
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+
+  SelfReferencingSecurityGroupIngressCondor:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow port 9618 inbound from self
+      GroupId: !Ref SelfReferencingSecurityGroup
+      SourceSecurityGroupId: !Ref SelfReferencingSecurityGroup
+      FromPort: 9618
+      ToPort: 9618
+      IpProtocol: tcp
+
+  SelfReferencingSecurityGroupIngressCondorExtraPorts:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow port 9700-9710 inbound from self
+      GroupId: !Ref SelfReferencingSecurityGroup
+      SourceSecurityGroupId: !Ref SelfReferencingSecurityGroup
+      FromPort: 9700
+      ToPort: 9710
+      IpProtocol: tcp
+
+  EfsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W40 # Allow full egress
+          - id: W5  # Allow full egress
+          - id: W36 # Descriptions not necessary
+    Properties:
+      VpcId: !Ref pVPCID
+      GroupDescription: HTCondor Product EFS Communication
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !Ref SelfReferencingSecurityGroup
+          FromPort: 2049
+          ToPort: 2049
+
+  # EFS
+  FileSystem:
+    Condition: cCreateFileSystem
+    Type: AWS::EFS::FileSystem
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      Encrypted: true
+      BackupPolicy:
+        Status: ENABLED
+      FileSystemTags:
+        - Key: Name
+          Value: !Sub "${pNamePrefix} HTCondor FileSystem"
+  MountTargetA:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !If [ cCreateFileSystem, !Ref FileSystem, !Ref pEfsId ]
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+      SubnetId: !Select [ '0', !Ref pSubnets ]
+  MountTargetB:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !If [ cCreateFileSystem, !Ref FileSystem, !Ref pEfsId ]
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+      SubnetId: !Select [ '1', !Ref pSubnets ]
+  MountTargetC:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !If [ cCreateFileSystem, !Ref FileSystem, !Ref pEfsId ]
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+      SubnetId: !Select [ '2', !Ref pSubnets ]
+
+  WorkerNodeAutoscalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn: ControlNodeInstance
+    Properties:
+      MixedInstancesPolicy: !If
+        - cUseSpotInstances
+        - InstancesDistribution:
+            OnDemandAllocationStrategy: prioritized
+            OnDemandPercentageAboveBaseCapacity: 0
+            SpotAllocationStrategy: lowest-price
+            SpotInstancePools: 3
+          LaunchTemplate:
+            LaunchTemplateSpecification:
+              LaunchTemplateId: !Ref WorkerNodeLaunchTemplate
+              Version: !GetAtt "WorkerNodeLaunchTemplate.LatestVersionNumber"
+            Overrides:
+              - InstanceType: !Ref pWorkerNodeInstanceType
+              - InstanceType: !If [ cSpotType1Exists, !Ref pWorkerSpotNodeInstanceType1, !Ref "AWS::NoValue"]
+              - InstanceType: !If [ cSpotType2Exists, !Ref pWorkerSpotNodeInstanceType2, !Ref "AWS::NoValue"]
+              - InstanceType: !If [ cSpotType3Exists, !Ref pWorkerSpotNodeInstanceType3, !Ref "AWS::NoValue"]
+        - !Ref "AWS::NoValue"
+      HealthCheckGracePeriod: 120
+      HealthCheckType: EC2
+      LaunchTemplate: !If
+        - cUseSpotInstances
+        - !Ref "AWS::NoValue"
+        - LaunchTemplateId: !Ref WorkerNodeLaunchTemplate
+          Version: !GetAtt "WorkerNodeLaunchTemplate.LatestVersionNumber"
+      MetricsCollection:
+        - Granularity: 1Minute
+      MaxSize: !Ref pNumberOfWorkerNodes
+      MinSize: "0"
+      DesiredCapacity: !Ref pNumberOfWorkerNodes
+      VPCZoneIdentifier: !Ref pSubnets
+      Tags:
+        - Key: Name
+          Value: !Sub "${pNamePrefix}-htcondor-worker-node"
+          PropagateAtLaunch: true
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT30M
+        Count: !If [ cLaunchWorkerNode, "1", "0" ]
+    UpdatePolicy:
+      AutoScalingReplacingUpdate:
+        WillReplace: true
+      AutoScalingRollingUpdate:
+        MaxBatchSize: 1
+        MinInstancesInService: 1
+        PauseTime: PT20M
+        WaitOnResourceSignals: true
+      AutoScalingScheduledAction:
+        IgnoreUnmodifiedGroupSizeProperties: true
+  WorkerNodeScheduledActionIn:
+    Type: AWS::AutoScaling::ScheduledAction
+    Condition: cCreateWorkerNodeKillSwitch
+    Properties:
+      AutoScalingGroupName: !Ref WorkerNodeAutoscalingGroup
+      DesiredCapacity: 0
+      StartTime: !Sub ${pWorkerNodeKillSwitchTimeStamp}
+
+  WorkerNodeLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: !Ref pWorkerNodeVolumeSize
+              DeleteOnTermination: true
+        EbsOptimized: false
+        IamInstanceProfile:
+          Name: !If [ cCreateWorkerNodeInstanceProfile, !Ref WorkerNodeInstanceProfile, !Ref pWorkerNodeInstanceProfile ]
+        ImageId: !Ref pWorkerNodeAmiId
+        Monitoring:
+          Enabled: true
+        InstanceType: !Ref pWorkerNodeInstanceType
+        SecurityGroupIds:
+          - !Ref SelfReferencingSecurityGroup
+        TagSpecifications:
+          - ResourceType: "volume"
+            Tags:
+              - Key: Name
+                Value: !Sub "${pNamePrefix}-htcondor-worker-volume"
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash -xe
+            REGION=${AWS::Region}
+            aws configure set default.region ${AWS::Region}
+            STACK_NAME=${AWS::StackName}
+            STACK_ID=${AWS::StackId}
+            EFS_ID=${FileSystem}
+            CONTROL_NODE_IP=${ControlNodeInstance.PrivateIp}
+            WORKER_TIMEOUT=${pWorkerNodeTimeout}
+
+            function error_exit {
+              /opt/aws/bin/cfn-signal --exit-code 1 --reason '$1' --stack $STACK_NAME --resource WorkerNodeAutoscalingGroup
+              exit 1
+            }
+
+            /bin/bash /etc/condor/initialize-worker.sh -r $REGION -n $STACK_NAME -s $STACK_ID -e $EFS_ID -i $CONTROL_NODE_IP -t $WORKER_TIMEOUT >> /var/log/initialize_log.log 2>&1
+
+            /opt/aws/bin/cfn-signal --region $REGION --success true --stack $STACK_NAME --resource WorkerNodeAutoscalingGroup
+
+  # ### Control Node
+  ControlNodeSshKey:
+    Type: AWS::EC2::KeyPair
+    Condition: cCreateControlNodeSshKey
+    Properties:
+      KeyName: !Sub ${pNamePrefix}-htcondor-control-node-ssh-key
+      KeyType: ed25519
+
+  ControlNodeInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: !Ref pControlNodeVolumeSize
+            DeleteOnTermination: true
+      EbsOptimized: false
+      KeyName: !If
+        - cCreateControlNodeSshKey
+        - !Ref ControlNodeSshKey
+        - !If
+          - cDisableSsh
+          - !Ref "AWS::NoValue"
+          - !Ref pControlNodeSshKey
+      IamInstanceProfile: !If [ cCreateControlNodeInstanceProfile, !Ref ControlNodeInstanceProfile, !Ref pControlNodeInstanceProfile ]
+      ImageId: !Ref pControlNodeAmiId
+      Monitoring: true
+      InstanceType: !Ref pControlNodeInstanceType
+      SecurityGroupIds:
+        - !Ref SelfReferencingSecurityGroup
+        - !Ref VpcCidrSecurityGroup
+        - !Ref ControlNodeSshSecurityGroup
+      SubnetId: !Select [ 0, !Ref pSubnets ]
+      Tags:
+        - Key: Name
+          Value: !Sub "${pNamePrefix}-htcondor-control-node"
+      PropagateTagsToVolumeOnCreation: true
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          REGION=${AWS::Region}
+          aws configure set default.region ${AWS::Region}
+          STACK_NAME="${AWS::StackName}"
+          STACK_ID=${AWS::StackId}
+          EFS_ID=${FileSystem}
+          function error_exit {
+            /opt/aws/bin/cfn-signal --exit-code 1 --reason '$1' --stack $STACK_NAME --resource ControlNodeInstance
+            exit 1
+          }
+
+          /bin/bash /etc/condor/initialize-controller.sh -r $REGION -n $STACK_NAME -s $STACK_ID -e $EFS_ID >> /var/log/initialize_log.log 2>&1
+
+          /opt/aws/bin/cfn-signal --region $REGION --success true --stack $STACK_NAME --resource ControlNodeInstance
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT10M

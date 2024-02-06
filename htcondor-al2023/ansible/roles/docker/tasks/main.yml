@@ -1,0 +1,23 @@
+---
+- name: Install docker
+  yum:
+    name: docker
+    state: latest
+
+# Potentially useful so ssm-user does not need to run sudo for docker
+# - name: Add ssm-user to docker group
+#   user:
+#     name: ssm-user
+#     groups: docker
+#     append: true
+
+- name: Install ecr-credential-helper
+  dnf:
+    name: amazon-ecr-credential-helper
+    state: latest
+
+- name: Start docker
+  service:
+    name: docker
+    state: started
+    enabled: true

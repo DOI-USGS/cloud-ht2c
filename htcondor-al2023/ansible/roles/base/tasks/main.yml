@@ -1,0 +1,21 @@
+---
+- name: Run "dnf update"
+  dnf:
+    name: '*'
+    state: latest
+
+- name: Run "yum update"
+  yum:
+    name: '*'
+    state: latest
+
+- name: Install base packages
+  yum:
+    name:
+      - git
+      - iptables-services
+      - wget
+      - screen
+      - emacs
+      - jq
+      - procps

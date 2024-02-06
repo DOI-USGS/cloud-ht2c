@@ -1,0 +1,30 @@
+---
+- name: Install HTCondor repo RPM file
+  yum:
+    name: https://research.cs.wisc.edu/htcondor/repo/23.x/htcondor-release-current.amzn2023.noarch.rpm
+    state: present
+    disable_gpg_check: true
+
+- name: Install "condor" package
+  yum:
+    name: condor
+    state: present
+  environment:
+    GET_HTCONDOR_PASSWORD: CHS_HTCondor9#
+
+- name: Start condor
+  service:
+    name: condor
+    state: started
+    enabled: true
+
+- name: Determine available groups
+  getent:
+    database: group
+
+- name: Add condor to docker group
+  user:
+    name: condor
+    append: yes
+    groups: docker
+  when: "'docker' in ansible_facts.getent_group"
