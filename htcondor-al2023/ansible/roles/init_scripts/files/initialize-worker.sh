@@ -177,7 +177,11 @@ STARTD_NOCLAIM_SHUTDOWN = shutdown_timeout_replaceme
 MASTER.DAEMON_SHUTDOWN = ( STARTD_StartTime == 0 ) && ((CurrentTime - DaemonStartTime) > 60)
 MASTER.DAEMON_SHUTDOWN_FAST = ( STARTD_StartTime == 0 ) && ((CurrentTime - DaemonStartTime) > 60)
 DEFAULT_MASTER_SHUTDOWN_SCRIPT = /etc/condor/shutdown-worker.sh
-FILESYSTEM_DOMAIN = htcondor.efs
+FILESYSTEM_DOMAIN = htcondor.chs.usgs.gov
+UID_DOMAIN = htcondor.chs.usgs.gov
+TRUST_UID_DOMAIN = TRUE
+SOFT_UID_DOMAIN = TRUE
+STARTER_ALLOW_RUNAS_OWNER = TRUE
 DOCKER_VOLUMES = CONDOR_EFS
 DOCKER_VOLUME_DIR_CONDOR_EFS = /mnt/condor_working
 DOCKER_MOUNT_VOLUMES = CONDOR_EFS

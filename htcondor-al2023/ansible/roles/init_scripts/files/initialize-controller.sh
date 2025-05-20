@@ -132,6 +132,8 @@ ALLOW_WRITE = *
 ALLOW_ADMINISTRATOR = $(CONDOR_HOST),  $(IP_ADDRESS)
 DAEMON_LIST = MASTER, COLLECTOR, SCHEDD, NEGOTIATOR
 FILESYSTEM_DOMAIN = htcondor.chs.usgs.gov
+UID_DOMAIN = htcondor.chs.usgs.gov
+SUBMIT_ATTRS = RunAsOwner
 use role:get_htcondor_central_manager
 use role:get_htcondor_submit
 END
