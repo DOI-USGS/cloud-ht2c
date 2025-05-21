@@ -320,7 +320,7 @@ Parameters:
   pWorkerNodeAmiId:
     Description: The AMI to run the HTCondor Worker nodes on. Needs to have minimum required software installed.
     Type: AWS::EC2::Image::Id
-    Default: ami-0df24e148fdb9f1d8
+    Default: ami-04999cd8f2624f834
 
   pControlNodeVolumeSize:
     Description: "The EBS volume size of the Control Node. NOTE: AWS Elastic File System storage is comes configured on the Control Node."
@@ -526,7 +526,7 @@ Parameters:
   pControlNodeAmiId:
     Description: The AMI to run the HTCondor Controller node on. Needs to have minimum required software installed.
     Type: AWS::EC2::Image::Id
-    Default: ami-0df24e148fdb9f1d8
+    Default: ami-04999cd8f2624f834
   pSshCidrIp:
     Type: String
     Default: 0.0.0.0/0
@@ -1564,6 +1564,11 @@ Resources:
               exit 1
             }
 
+            dnf update -y
+            dnf install ansible -y
+
+            ansible-pull -U https://github.com/DOI-USGS/cloud-ht2c.git -i localhost htcondor-al2023/ansible/playbook.yml
+
             /bin/bash /etc/condor/initialize-worker.sh -r $REGION -n $STACK_NAME -s $STACK_ID -e $EFS_ID -i $CONTROL_NODE_IP -t $WORKER_TIMEOUT >> /var/log/initialize_log.log 2>&1
 
             /opt/aws/bin/cfn-signal --region $REGION --success true --stack $STACK_NAME --resource WorkerNodeAutoscalingGroup
@@ -1617,6 +1622,11 @@ Resources:
             /opt/aws/bin/cfn-signal --exit-code 1 --reason '$1' --stack $STACK_NAME --resource ControlNodeInstance
             exit 1
           }
+
+          dnf update -y
+          dnf install ansible -y
+
+          ansible-pull -U https://github.com/DOI-USGS/cloud-ht2c.git -i localhost htcondor-al2023/ansible/playbook.yml
 
           /bin/bash /etc/condor/initialize-controller.sh -r $REGION -n $STACK_NAME -s $STACK_ID -e $EFS_ID >> /var/log/initialize_log.log 2>&1
 

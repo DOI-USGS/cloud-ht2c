@@ -1,14 +1,12 @@
 # Launch a new HTCondor Cluster
 
 You can launch the HTCondor Cluster resources in your AWS account by creating an
-AWS CloudFormation stack from either the
-[htcondor-centos-7.yml](../htcondor-centos7/cloudformation/htcondor-centos-7.yml)
-or
-[htcondor-amazon-linux-2.yml](../htcondor-al2/cloudformation/htcondor-amazon-linux-2.yml)
-file, depending on your desired base OS.
+AWS CloudFormation stack from the [htcondor-al2023.yml](../htcondor-al2023/cloudformation/htcondor-al2023.yml)
+template file.
 
 ## 1. Launch the CloudFormation Stack
 
+1. Clone this repository to your local machine
 1. In your AWS account, navigate to the CloudFormation console
 1. Select `Create stack` > `With new resources (standard)`
 1. Select `Template is ready` (selected by default)

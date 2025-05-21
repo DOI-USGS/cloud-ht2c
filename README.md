@@ -9,22 +9,24 @@ project and [Cloud Hosting Solutions](https://www.usgs.gov/associate-chief-i
 
 - AWS Account
 - AWS account access with privileges to create required resources in
-[htcondor-centos-7.yml](./htcondor-centos7/cloudformation/htcondor-centos-7.yml)
-or
-[htcondor-amazon-linux-2.yml](./htcondor-al2/cloudformation/htcondor-amazon-linux-2.yml)
+[htcondor-al2023.yml](./htcondor-centos7/cloudformation/htcondor-al2023.yml)
 - AWS VPC with at least three subnets
-- AWS Amazon Machine Image (AMI) using CentOS 7 for Control and Worker Nodes
-- Data to process
 
 ## Overview
 
-The [htcondor-centos-7.yml](./htcondor-centos7/cloudformation/htcondor-centos-7.yml)
-and
-[htcondor-amazon-linux-2.yml](./htcondor-al2/cloudformation/htcondor-amazon-linux-2.yml)
-template files in this repository each create a CloudFormation stack with all
-necessary AWS resources for a Linux-based HTCondor cluster on-demand.
-This version is an Alpha release (v. 0.1) with new
-capabilities and further documentation to come.
+The [htcondor-al2023.yml](./htcondor-centos7/cloudformation/htcondor-al2023.yml)
+template file in this repository creates a CloudFormation stack with all
+necessary AWS resources for a Linux-based HTCondor cluster, on-demand.
+This version is an Alpha release with new capabilities and further documentation
+to come.
+
+The Control and Worker nodes in the cluster run the Amazon Linux 2023 operating
+system, and the HTCondor software is configured when the cluster is deployed.
+Due to the ephemeral nature of the cluster, it is advised to also build/copy
+your runtime software to the cluster at the time of deployment as well.
+
+You can save a custom Amazon Machine Image (AMI) and use that AMI ID to override
+the `pControlNodeAmiId` and `pWorkerNodeAmiId`, if desired.
 
 ## Documentation
 
