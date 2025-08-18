@@ -18,3 +18,6 @@ jobs and performing computations with the cluster. Please visit the
 for more info on running jobs. You can follow the
 [HTCondor Quick Start Guide](https://htcondor.readthedocs.io/en/latest/users-manual/quick-start-guide.html)
 to run your first job.
+
+# Connect to a HTCondor Cluster using Quick-Create
+A new cluster can be created using a [quick-create link](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stacks-quick-create-links.html) by simply opening a pre-defined url in the browser. The quick-create link is created in Step 4 of Cloudformation once all of the stack parameters have been set. It contains all of the parameters defined in the setup process which can all be modified when re-opening via the quick-create url. 
