@@ -30,7 +30,7 @@ The CIDR range to grant inbound access to the Control Node. Because the Control
 Nodes run behind a Network Load Balancer, ingress for the HT Condor ports (9618,
 9700-9710) must be granted by CIDR Range, a self-referencing security group
 cannot be used. It is recommended to use the combined CIDR range of the selected
-subnets, in order to minimize unnecessary access.
+subnets, in order to minimize unnecessary access. (hint, you may be able to use one of the addresses selected in Subnets, eg xxx.xxx.xxx.xxx/xx)
 
 ### Controller Configuration
 
